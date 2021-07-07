@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:login_flutter/provider/page_notifier.dart';
 import 'package:provider/provider.dart';
 
+
 class LoginPage extends Page {
 
   static final String pageName = "LoginPage";
@@ -43,7 +44,7 @@ class _LoginWidgetState extends State<LoginWidget> {
             ),
             child: Scaffold(
               backgroundColor: Colors.transparent,
-              body: SafeArea(
+              body: Container(
                 child: Form(
                   key: _formKey,
                   child: ListView(
@@ -56,9 +57,9 @@ class _LoginWidgetState extends State<LoginWidget> {
                         child: Image.asset("assets/skyIcon.png")
                       ),
                       SizedBox(height: 20),
-                      _buildTextFormField("Email Address", _emailController),
+                      _buildTextFormField("Email Address", _emailController, TextInputType.emailAddress),
                       SizedBox(height: 10),
-                      _buildTextFormField("password", _passwordController),
+                      _buildTextFormField("password", _passwordController, TextInputType.visiblePassword),
                       SizedBox(height: 30),
                       TextButton(
                           style: TextButton.styleFrom(backgroundColor: Colors.lightBlue,
@@ -68,11 +69,13 @@ class _LoginWidgetState extends State<LoginWidget> {
                                                           shape: _shape),
                           child: Text("Log In"),
                           onPressed: () {
-                            // if (_formKey.currentState.validate() == false) {
-                            //
-                            // } else {
-                            //
-                            // }
+                            var state = _formKey.currentState;
+                            if (state != null) {
+                              bool isSuccess = state.validate();
+                              if (isSuccess == true) {
+
+                              }
+                            }
                       })
                     ],
                   ),
@@ -84,20 +87,41 @@ class _LoginWidgetState extends State<LoginWidget> {
     );
   }
 
-  TextFormField _buildTextFormField(String hintText, TextEditingController controller){
+  TextFormField _buildTextFormField(String hintText, TextEditingController controller, TextInputType type) {
 
     OutlineInputBorder _border = OutlineInputBorder(borderRadius : BorderRadius.circular(8), borderSide: BorderSide(color: Colors.transparent, width: 0));
 
     return TextFormField (
         controller: controller,
-        validator: (val) {
-          if (val == null || val.isEmpty || val.length < 8) {
-            return "더 입력해 주세요";
+        validator: (text) {
+          if (text != null && text.isNotEmpty) {
+            if (text.length < 8) {
+              return "8자 이상 입력해 주세요";
+            }
+
+            if (type == TextInputType.emailAddress) {
+              bool emailValid = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(text);
+              if (emailValid == false) {
+                return "이메일 형식에 맞게 입력해 주세요";
+              }
+            }
           }
+
           return null;
+        },
+        onChanged: (text) {
+          var state = _formKey.currentState;
+          if (state != null && text.isEmpty == false) {
+            bool isSuccess = state.validate();
+            if (isSuccess == true) {
+
+            }
+          }
         },
         cursorColor: Colors.white,
         style: TextStyle(color: Colors.white),
+        keyboardType: type,
+        obscureText: type == TextInputType.visiblePassword,
         decoration: InputDecoration(
             focusColor: Colors.white,
             hintText: hintText,
